@@ -9,7 +9,7 @@ interface SignUpPageProps {
   onGoToSignIn: () => void;
 }
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+// Removed AnimatedPressable - using Animated.View wrapper instead for better style compatibility
 
 export function SignUpPage({ onManualSignUp, onSocialSignUp, onGoToSignIn }: SignUpPageProps) {
   return (
@@ -82,17 +82,18 @@ export function SignUpPage({ onManualSignUp, onSocialSignUp, onGoToSignIn }: Sig
         </Animated.View>
 
         {/* Manual Sign-Up Button */}
-        <AnimatedPressable
-          entering={FadeInDown.delay(500)}
-          onPress={onManualSignUp}
-          style={({ pressed }) => [
-            styles.emailButton,
-            pressed && styles.buttonPressed
-          ]}
-        >
-          <Ionicons name="mail" size={20} color="#FFFFFF" />
-          <Text style={styles.emailButtonText}>Sign up with Email</Text>
-        </AnimatedPressable>
+        <Animated.View entering={FadeInDown.delay(500)}>
+          <Pressable
+            onPress={onManualSignUp}
+            style={({ pressed }) => [
+              styles.emailButton,
+              pressed && styles.buttonPressed
+            ]}
+          >
+            <Ionicons name="mail" size={20} color="#FFFFFF" />
+            <Text style={styles.emailButtonText}>Sign up with Email</Text>
+          </Pressable>
+        </Animated.View>
 
         {/* Sign In Link */}
         <Animated.View 
@@ -127,9 +128,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 36,
-    fontWeight: '600',
     color: '#FFFFFF',
     marginBottom: 12,
+    fontFamily: 'ReemKufi_600SemiBold',
   },
   subtitle: {
     fontSize: 16,
@@ -189,6 +190,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+    marginBottom: 8,
   },
   emailButtonText: {
     fontSize: 16,
