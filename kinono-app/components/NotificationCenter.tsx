@@ -20,7 +20,7 @@ export function NotificationCenter({ onBack, onHomeClick, onStartHangout, onSear
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={onBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />

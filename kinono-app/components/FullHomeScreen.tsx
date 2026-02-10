@@ -151,7 +151,7 @@ export function FullHomeScreen({
   const eventsToDisplay = upcomingEvents || upcomingEventsDefault;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerSpacer} />

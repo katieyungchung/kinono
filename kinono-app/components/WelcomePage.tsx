@@ -5,125 +5,159 @@ import Animated, {
   useAnimatedStyle, 
   withTiming, 
   withDelay,
+  withSpring,
   useSharedValue,
-  withSequence
+  Easing,
 } from 'react-native-reanimated';
 import { useEffect } from 'react';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const PUZZLE_SIZE = 120;
 
 interface WelcomePageProps {
   onComplete: () => void;
 }
 
 export function WelcomePage({ onComplete }: WelcomePageProps) {
-  const leftPieceX = useSharedValue(-200);
-  const leftPieceOpacity = useSharedValue(0);
-  const rightPieceX = useSharedValue(200);
-  const rightPieceOpacity = useSharedValue(0);
+  // Puzzle piece animations
+  const leftPieceX = useSharedValue(-SCREEN_WIDTH);
+  const leftPieceY = useSharedValue(50);
+  const leftPieceRotate = useSharedValue(-80);
+  
+  const rightPieceX = useSharedValue(SCREEN_WIDTH);
+  const rightPieceY = useSharedValue(0);
+  const rightPieceRotate = useSharedValue(80);
+
+  // Text animations
   const titleOpacity = useSharedValue(0);
   const subtitleOpacity = useSharedValue(0);
   const subtitle2Opacity = useSharedValue(0);
   const buttonOpacity = useSharedValue(0);
 
   useEffect(() => {
-    // Animate puzzle pieces
-    leftPieceX.value = withDelay(300, withTiming(0, { duration: 1200 }));
-    leftPieceOpacity.value = withDelay(300, withTiming(1, { duration: 1200 }));
-    rightPieceX.value = withDelay(300, withTiming(0, { duration: 1200 }));
-    rightPieceOpacity.value = withDelay(300, withTiming(1, { duration: 1200 }));
+    // Slide in from left and right to center
+    leftPieceX.value = withTiming(-PUZZLE_SIZE / 2, {
+      duration: 1000,
+      easing: Easing.out(Easing.cubic),
+    });
 
-    // Animate text
-    titleOpacity.value = withDelay(1800, withTiming(1, { duration: 800 }));
-    subtitleOpacity.value = withDelay(2400, withTiming(1, { duration: 800 }));
-    subtitle2Opacity.value = withDelay(3000, withTiming(1, { duration: 800 }));
-    buttonOpacity.value = withDelay(3600, withTiming(1, { duration: 500 }));
+    rightPieceX.value = withTiming(PUZZLE_SIZE / 2 - 26, {
+      duration: 1000,
+      easing: Easing.out(Easing.cubic),
+    });
+
+    // Rotate to upright (around their own centers)
+    leftPieceRotate.value = withTiming(0, {
+      duration: 1000,
+      easing: Easing.out(Easing.cubic),
+    });
+
+    rightPieceRotate.value = withTiming(0, {
+      duration: 1000,
+      easing: Easing.out(Easing.cubic),
+    });
+
+    // Move left piece up slightly (after initial animation)
+    leftPieceY.value = withDelay(1050, withTiming(0, {
+      duration: 400,
+      easing: Easing.inOut(Easing.ease),
+    }));
+
+    // Move right piece down slightly (after initial animation)
+    rightPieceY.value = withDelay(1050, withTiming(20, {
+      duration: 400,
+      easing: Easing.inOut(Easing.ease),
+    }));
+
+    // Text fade-in
+    titleOpacity.value = withDelay(2000, withTiming(1, { duration: 500 }));
+    subtitleOpacity.value = withDelay(2600, withTiming(1, { duration: 500 }));
+    subtitle2Opacity.value = withDelay(3600, withTiming(1, { duration: 500 }));
+    buttonOpacity.value = withDelay(4000, withTiming(1, { duration: 400 }));
   }, []);
 
   const leftPieceStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: leftPieceX.value }],
-    opacity: leftPieceOpacity.value,
+    transform: [
+      { translateX: leftPieceX.value },
+      { translateY: leftPieceY.value },
+      { rotate: `${leftPieceRotate.value}deg` },
+    ],
   }));
 
   const rightPieceStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: rightPieceX.value }],
-    opacity: rightPieceOpacity.value,
+    transform: [
+      { translateX: rightPieceX.value },
+      { translateY: rightPieceY.value },
+      { rotate: `${rightPieceRotate.value}deg` },
+      { scale: 1.05 },
+    ],
   }));
 
   const titleStyle = useAnimatedStyle(() => ({
     opacity: titleOpacity.value,
-    transform: [{ translateY: withTiming(titleOpacity.value === 1 ? 0 : 20) }],
+    transform: [{ translateY: (1 - titleOpacity.value) * 20 }],
   }));
 
   const subtitleStyle = useAnimatedStyle(() => ({
     opacity: subtitleOpacity.value,
-    transform: [{ translateY: withTiming(subtitleOpacity.value === 1 ? 0 : 20) }],
+    transform: [{ translateY: (1 - subtitleOpacity.value) * 20 }],
   }));
 
   const subtitle2Style = useAnimatedStyle(() => ({
     opacity: subtitle2Opacity.value,
-    transform: [{ translateY: withTiming(subtitle2Opacity.value === 1 ? 0 : 20) }],
+    transform: [{ translateY: (1 - subtitle2Opacity.value) * 20 }],
   }));
 
   const buttonStyle = useAnimatedStyle(() => ({
     opacity: buttonOpacity.value,
+    transform: [{ scale: buttonOpacity.value }],
   }));
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.content}>
-        {/* Puzzle Logo Animation */}
+
+        {/* Puzzle Logo */}
         <View style={styles.logoContainer}>
-          {/* Left puzzle piece (mint/teal) */}
-          <Animated.View style={[styles.leftPiece, leftPieceStyle]}>
-            <Image 
-              source={require('@/assets/images/puzzle-logo.png')} 
+          {/* Left piece */}
+          <Animated.View style={[styles.puzzlePiece, leftPieceStyle]}>
+            <Image
+              source={require('@/assets/images/puzzlepiece-left.png')}
               style={styles.puzzleImage}
               contentFit="contain"
             />
           </Animated.View>
 
-          {/* Right puzzle piece (orange) */}
-          <Animated.View style={[styles.rightPiece, rightPieceStyle]}>
-            <Image 
-              source={require('@/assets/images/puzzle-logo.png')} 
+          {/* Right piece */}
+          <Animated.View style={[styles.puzzlePiece, rightPieceStyle]}>
+            <Image
+              source={require('@/assets/images/puzzlepiece-right.png')}
               style={styles.puzzleImage}
               contentFit="contain"
             />
           </Animated.View>
         </View>
 
-        {/* App Name */}
-        <Animated.View style={[styles.titleContainer, titleStyle]}>
-          <Text style={styles.title}>kinono</Text>
-        </Animated.View>
+        {/* Text */}
+        <Animated.Text style={[styles.appName, titleStyle]}>
+          kinono
+        </Animated.Text>
 
-        {/* Welcome text */}
-        <Animated.View style={[styles.subtitleContainer, subtitleStyle]}>
-          <Text style={styles.subtitle}>
-            Welcome! Turn 'let's hangout' into
-          </Text>
-        </Animated.View>
+        <Animated.Text style={[styles.welcomeText, subtitleStyle]}>
+          Welcome! Turn 'let's hangout' into
+        </Animated.Text>
 
-        {/* "real connection" */}
-        <Animated.View style={[styles.subtitle2Container, subtitle2Style]}>
-          <Text style={styles.subtitle2}>
-            real connection
-          </Text>
-        </Animated.View>
+        <Animated.Text style={[styles.realConnectionText, subtitle2Style]}>
+          real connection
+        </Animated.Text>
 
-        {/* Get Started button */}
+        {/* Button */}
         <Animated.View style={buttonStyle}>
-          <Pressable
-            onPress={onComplete}
-            style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed
-            ]}
-          >
-            <Text style={styles.buttonText}>Get Started</Text>
+          <Pressable onPress={onComplete} style={styles.getStartedButton}>
+            <Text style={styles.getStartedButtonText}>Get Started</Text>
           </Pressable>
         </Animated.View>
+
       </View>
     </SafeAreaView>
   );
@@ -141,77 +175,52 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   logoContainer: {
-    width: 320,
-    height: 240,
-    marginBottom: 24,
-    alignItems: 'center',
+    width: PUZZLE_SIZE * 2,
+    height: PUZZLE_SIZE * 1.5,
+    marginBottom: 40,
     justifyContent: 'center',
+    alignItems: 'center',
     position: 'relative',
   },
-  leftPiece: {
+  puzzlePiece: {
     position: 'absolute',
-    width: 320,
-    height: 240,
-    overflow: 'hidden',
-  },
-  rightPiece: {
-    position: 'absolute',
-    width: 320,
-    height: 240,
-    overflow: 'hidden',
+    width: PUZZLE_SIZE,
+    height: PUZZLE_SIZE,
   },
   puzzleImage: {
-    width: 320,
-    height: 240,
+    width: '100%',
+    height: '100%',
   },
-  titleContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
+  appName: {
     fontSize: 72,
     fontWeight: '300',
-    color: '#FFFFFF',
+    color: 'white',
     letterSpacing: 2,
+    marginBottom: 24,
   },
-  subtitleContainer: {
-    alignItems: 'center',
-    maxWidth: 320,
-  },
-  subtitle: {
+  welcomeText: {
     fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: 8,
     textAlign: 'center',
   },
-  subtitle2Container: {
-    alignItems: 'center',
-    marginBottom: 48,
-  },
-  subtitle2: {
+  realConnectionText: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: 'white',
+    marginBottom: 60,
     textAlign: 'center',
   },
-  button: {
+  getStartedButton: {
     paddingHorizontal: 48,
     paddingVertical: 16,
     backgroundColor: '#F59E0B',
-    borderRadius: 999,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    borderRadius: 9999,
     elevation: 8,
   },
-  buttonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  buttonText: {
-    fontSize: 18,
+  getStartedButtonText: {
+    color: 'white',
     fontWeight: '600',
-    color: '#FFFFFF',
+    fontSize: 18,
   },
 });
-

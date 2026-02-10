@@ -1,6 +1,6 @@
 import { View, Pressable, Text, StyleSheet } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface BottomNavProps {
   onHomeClick: () => void;
@@ -21,15 +21,15 @@ export function BottomNav({
   activeTab = 'home', 
   notificationCount = 0 
 }: BottomNavProps) {
+  const insets = useSafeAreaInsets();
+  
   return (
-    <Animated.View 
-      entering={FadeInUp.delay(500)}
-      style={styles.container}
-    >
+    <View style={[styles.container, { paddingBottom: insets.bottom || 12 }]}>
       {/* Search */}
       <Pressable 
         onPress={onSearchClick}
         style={styles.tab}
+        android_ripple={null}
       >
         <Ionicons 
           name="search" 
@@ -42,6 +42,7 @@ export function BottomNav({
       <Pressable 
         onPress={onInboxClick}
         style={styles.tab}
+        android_ripple={null}
       >
         <View>
           <Ionicons 
@@ -61,6 +62,7 @@ export function BottomNav({
       <Pressable 
         onPress={onHomeClick}
         style={styles.homeTab}
+        android_ripple={null}
       >
         <View style={styles.homeButton}>
           <Ionicons name="home" size={24} color="#FFFFFF" />
@@ -71,6 +73,7 @@ export function BottomNav({
       <Pressable 
         onPress={onProfileClick}
         style={styles.tab}
+        android_ripple={null}
       >
         <Ionicons 
           name="person" 
@@ -83,6 +86,7 @@ export function BottomNav({
       <Pressable 
         onPress={onStartHangout}
         style={styles.tab}
+        android_ripple={null}
       >
         <Ionicons 
           name="sparkles" 
@@ -90,7 +94,7 @@ export function BottomNav({
           color={activeTab === 'start' ? '#F59E0B' : 'rgba(255, 255, 255, 0.6)'} 
         />
       </Pressable>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -101,7 +105,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingTop: 12,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
