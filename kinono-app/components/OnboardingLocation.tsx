@@ -1,8 +1,10 @@
-import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import MapView, { Marker, Circle } from 'react-native-maps';
+import * as Location from 'expo-location';
 import { KinonoLogo } from './KinonoLogo';
 import { OnboardingProgressBar } from './OnboardingProgressBar';
 import Slider from '@react-native-community/slider';
@@ -29,15 +31,79 @@ export function OnboardingLocation({
   const [location, setLocation] = useState(initialLocation);
   const [distance, setDistance] = useState(initialDistance);
   const [showLocationDialog, setShowLocationDialog] = useState(false);
+  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [region, setRegion] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.3,
+    longitudeDelta: 0.3,
+  });
+
+  useEffect(() => {
+    // Check if we already have location permission
+    checkLocationPermission();
+  }, []);
+
+  const checkLocationPermission = async () => {
+    const { status } = await Location.getForegroundPermissionsAsync();
+    if (status === 'granted') {
+      // Already have permission, get location
+      getCurrentLocation();
+    }
+  };
 
   const handleUseCurrentLocation = () => {
     setShowLocationDialog(true);
   };
 
-  const handleAllowLocation = () => {
-    // Simulate getting actual location
-    setLocation('Los Angeles, CA');
-    setShowLocationDialog(false);
+  const getCurrentLocation = async () => {
+    try {
+      setIsLoadingLocation(true);
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      setUserLocation(location);
+      
+      // Update region to center on user's location
+      setRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.3,
+        longitudeDelta: 0.3,
+      });
+
+      // Get address from coordinates (reverse geocoding)
+      const address = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
+      if (address[0]) {
+        const { city, region: state } = address[0];
+        setLocation(`${city}, ${state}`);
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+
+  const handleAllowLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        setShowLocationDialog(false);
+        await getCurrentLocation();
+      } else {
+        setShowLocationDialog(false);
+        alert('Location permission denied. Please enter your location manually.');
+      }
+    } catch (error) {
+      console.error('Error requesting location permission:', error);
+      setShowLocationDialog(false);
+    }
   };
 
   const handleDenyLocation = () => {
@@ -172,18 +238,55 @@ export function OnboardingLocation({
           </View>
         </Animated.View>
 
-        {/* Map placeholder */}
+        {/* Map */}
         <Animated.View 
           entering={FadeInDown.delay(400)}
-          style={styles.mapPlaceholder}
+          style={styles.mapContainer}
         >
-          <Ionicons name="map" size={48} color="rgba(255, 255, 255, 0.3)" />
-          <Text style={styles.mapText}>
-            Map will appear here
-          </Text>
-          <Text style={styles.mapSubtext}>
-            {location || 'Enter a location above'}
-          </Text>
+          {isLoadingLocation ? (
+            <View style={styles.mapPlaceholder}>
+              <ActivityIndicator size="large" color="#9DE4CF" />
+              <Text style={styles.mapText}>Loading your location...</Text>
+            </View>
+          ) : (
+            <MapView
+              style={styles.map}
+              region={region}
+              onRegionChangeComplete={setRegion}
+              showsUserLocation={true}
+              showsMyLocationButton={false}
+              mapType="standard"
+            >
+              {/* Distance Circle - Always visible and updates with slider */}
+              <Circle
+                center={{
+                  latitude: userLocation?.coords.latitude || region.latitude,
+                  longitude: userLocation?.coords.longitude || region.longitude,
+                }}
+                radius={distance * 1609.34} // Convert miles to meters
+                fillColor="rgba(63, 187, 150, 0.3)"
+                strokeColor="rgba(157, 228, 207, 0.8)"
+                strokeWidth={2}
+              />
+              
+              {/* Marker - Only when user location is available */}
+              {userLocation && (
+                <Marker
+                  coordinate={{
+                    latitude: userLocation.coords.latitude,
+                    longitude: userLocation.coords.longitude,
+                  }}
+                  title="You are here"
+                  pinColor="#F59E0B"
+                />
+              )}
+            </MapView>
+          )}
+          {location && !isLoadingLocation && (
+            <View style={styles.mapOverlay}>
+              <Text style={styles.mapOverlayText}>{location}</Text>
+            </View>
+          )}
         </Animated.View>
 
         {/* Buttons */}
@@ -309,27 +412,52 @@ const styles = StyleSheet.create({
     minWidth: 60,
     textAlign: 'right',
   },
-  mapPlaceholder: {
+  mapContainer: {
     flex: 1,
-    minHeight: 180,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    minHeight: 250,
     borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 24,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  mapPlaceholder: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
     padding: 20,
   },
   mapText: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.6)',
     marginTop: 12,
+    textAlign: 'center',
   },
-  mapSubtext: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.4)',
-    marginTop: 4,
+  mapOverlay: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    right: 12,
+    backgroundColor: 'rgba(90, 61, 92, 0.95)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  mapOverlayText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textAlign: 'center',
   },
   buttonContainer: {
     gap: 12,
