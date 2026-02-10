@@ -1,7 +1,7 @@
 
-  # Combined Wireframes
+  # Kinono App
 
-  This is a code bundle for Combined Wireframes. The original project is available at https://www.figma.com/design/hGi0G2HdFcOGz1kdD5NP0i/Combined-Wireframes.
+Mobile app for encouraging social connection. 
 
   ## Running the code
 
