@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   appName: {
     fontSize: 72,
-    fontWeight: '300',
+    fontFamily: 'ReemKufi_400Regular',
     color: 'white',
     letterSpacing: 2,
     marginBottom: 24,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   realConnectionText: {
     fontSize: 20,
-    fontWeight: '600',
+    fontFamily: 'ReemKufi_600SemiBold',
     color: 'white',
     marginBottom: 60,
     textAlign: 'center',
