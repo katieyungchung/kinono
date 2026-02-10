@@ -41,7 +41,7 @@ export function WelcomePage({ onComplete }: WelcomePageProps) {
       easing: Easing.out(Easing.cubic),
     });
 
-    rightPieceX.value = withTiming(PUZZLE_SIZE / 2 - 26, {
+    rightPieceX.value = withTiming(PUZZLE_SIZE / 2 - 25, {
       duration: 1000,
       easing: Easing.out(Easing.cubic),
     });

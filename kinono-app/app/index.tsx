@@ -14,6 +14,7 @@ import { SearchPage } from '../components/SearchPage';
 import { ProfilePage } from '../components/ProfilePage';
 import { NotificationCenter } from '../components/NotificationCenter';
 import { SettingsPage } from '../components/SettingsPage';
+import { StartHangout } from '../components/StartHangout';
 
 type Screen =
   | 'welcome'
@@ -30,7 +31,8 @@ type Screen =
   | 'search'
   | 'profile'
   | 'notifications'
-  | 'settings';
+  | 'settings'
+  | 'start-hangout';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('welcome');
@@ -109,7 +111,19 @@ export default function App() {
 
   // Home screen navigation
   const handleStartHangout = () => {
-    console.log('Starting hangout...');
+    setCurrentScreen('start-hangout');
+  };
+
+  const handleSendInvite = (inviteData: {
+    friends: Array<{ id: number; name: string; avatar: string }>;
+    location: string;
+    date: string;
+    time: string;
+    message: string;
+  }) => {
+    console.log('Invite sent:', inviteData);
+    // Return to home after sending invite
+    setCurrentScreen('home');
   };
 
   const handleSearchClick = () => setCurrentScreen('search');
@@ -271,6 +285,20 @@ export default function App() {
   if (currentScreen === 'settings') {
     return (
       <SettingsPage onBack={handleHomeClick} />
+    );
+  }
+
+  if (currentScreen === 'start-hangout') {
+    return (
+      <StartHangout
+        onBack={handleHomeClick}
+        onSendInvite={handleSendInvite}
+        onHomeClick={handleHomeClick}
+        onSearchClick={handleSearchClick}
+        onProfileClick={handleProfileClick}
+        onInboxClick={handleInboxClick}
+        notificationCount={3}
+      />
     );
   }
 
