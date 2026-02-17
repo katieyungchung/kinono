@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
+    fontFamily: 'ReemKufi_600SemiBold',
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 8,

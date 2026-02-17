@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   header: { marginBottom: 24 },
   logoContainer: { marginBottom: 24, alignItems: 'center' },
   titleContainer: { marginBottom: 32, alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: '600', color: '#FFFFFF', textAlign: 'center', marginBottom: 12 },
+  title: { fontSize: 24, fontFamily: 'ReemKufi_600SemiBold', color: '#FFFFFF', textAlign: 'center', marginBottom: 12 },
   subtitle: { fontSize: 16, color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', lineHeight: 24 },
   successContainer: { flexDirection: 'row', backgroundColor: '#D4F4E7', borderRadius: 16, padding: 16, marginBottom: 24, gap: 12 },
   successIcon: { width: 40, height: 40, backgroundColor: '#5A3D5C', borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
