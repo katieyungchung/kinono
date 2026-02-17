@@ -6,6 +6,7 @@ import { SignInPage } from '../components/SignInPage';
 import { SuccessPage } from '../components/SuccessPage';
 import { OnboardingLocation } from '../components/OnboardingLocation';
 import { OnboardingInterests } from '../components/OnboardingInterests';
+import { OnboardingDetailedInterests } from '../components/OnboardingDetailedInterests';
 import { OnboardingAddFriends } from '../components/OnboardingAddFriends';
 import { OnboardingCalendarSync } from '../components/OnboardingCalendarSync';
 import { OnboardingComplete } from '../components/OnboardingComplete';
@@ -24,6 +25,7 @@ type Screen =
   | 'success'
   | 'onboarding-location'
   | 'onboarding-interests'
+  | 'onboarding-detailed-interests'
   | 'onboarding-friends'
   | 'onboarding-calendar'
   | 'onboarding-complete'
@@ -39,6 +41,7 @@ export default function App() {
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [location, setLocation] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
+  const [detailedInterests, setDetailedInterests] = useState<string[]>([]);
 
   // Welcome -> Sign Up flow
   const handleWelcomeComplete = () => setCurrentScreen('signup');
@@ -67,8 +70,9 @@ export default function App() {
     setOnboardingStep(step);
     if (step === 1) setCurrentScreen('onboarding-location');
     else if (step === 2) setCurrentScreen('onboarding-interests');
-    else if (step === 3) setCurrentScreen('onboarding-friends');
-    else if (step === 4) setCurrentScreen('onboarding-calendar');
+    else if (step === 3) setCurrentScreen('onboarding-detailed-interests');
+    else if (step === 4) setCurrentScreen('onboarding-friends');
+    else if (step === 5) setCurrentScreen('onboarding-calendar');
   };
 
   const handleLocationContinue = (loc: string) => {
@@ -80,16 +84,27 @@ export default function App() {
   const handleInterestsContinue = (selectedInterests: string[]) => {
     setInterests(selectedInterests);
     setOnboardingStep(3);
+    setCurrentScreen('onboarding-detailed-interests');
+  };
+
+  const handleDetailedInterestsContinue = (selectedDetailedInterests: string[]) => {
+    setDetailedInterests(selectedDetailedInterests);
+    setOnboardingStep(4);
     setCurrentScreen('onboarding-friends');
   };
 
+  const handleDetailedInterestsBack = () => {
+    setOnboardingStep(2);
+    setCurrentScreen('onboarding-interests');
+  };
+
   const handleFriendsContinue = () => {
-    setOnboardingStep(4);
+    setOnboardingStep(5);
     setCurrentScreen('onboarding-calendar');
   };
 
   const handleCalendarContinue = () => {
-    setOnboardingStep(5);
+    setOnboardingStep(6);
     setCurrentScreen('onboarding-complete');
   };
 
@@ -99,11 +114,12 @@ export default function App() {
 
   const handleSkip = () => {
     // Skip to next step or complete onboarding
-    if (onboardingStep < 4) {
+    if (onboardingStep < 5) {
       setOnboardingStep(onboardingStep + 1);
       if (onboardingStep === 1) setCurrentScreen('onboarding-interests');
-      else if (onboardingStep === 2) setCurrentScreen('onboarding-friends');
-      else if (onboardingStep === 3) setCurrentScreen('onboarding-calendar');
+      else if (onboardingStep === 2) setCurrentScreen('onboarding-detailed-interests');
+      else if (onboardingStep === 3) setCurrentScreen('onboarding-friends');
+      else if (onboardingStep === 4) setCurrentScreen('onboarding-calendar');
     } else {
       setCurrentScreen('onboarding-complete');
     }
@@ -176,7 +192,7 @@ export default function App() {
     return (
       <OnboardingLocation
         currentStep={1}
-        totalSteps={5}
+        totalSteps={6}
         onStepClick={handleOnboardingStepClick}
         initialLocation={location}
         onContinue={handleLocationContinue}
@@ -189,7 +205,7 @@ export default function App() {
     return (
       <OnboardingInterests
         currentStep={2}
-        totalSteps={5}
+        totalSteps={6}
         onStepClick={handleOnboardingStepClick}
         initialInterests={interests}
         onContinue={handleInterestsContinue}
@@ -198,11 +214,26 @@ export default function App() {
     );
   }
 
+  if (currentScreen === 'onboarding-detailed-interests') {
+    return (
+      <OnboardingDetailedInterests
+        currentStep={3}
+        totalSteps={6}
+        onStepClick={handleOnboardingStepClick}
+        selectedCategories={interests}
+        initialDetailedInterests={detailedInterests}
+        onContinue={handleDetailedInterestsContinue}
+        onSkip={handleSkip}
+        onBack={handleDetailedInterestsBack}
+      />
+    );
+  }
+
   if (currentScreen === 'onboarding-friends') {
     return (
       <OnboardingAddFriends
-        currentStep={3}
-        totalSteps={5}
+        currentStep={4}
+        totalSteps={6}
         onStepClick={handleOnboardingStepClick}
         onContinue={handleFriendsContinue}
         onSkip={handleSkip}
@@ -213,8 +244,8 @@ export default function App() {
   if (currentScreen === 'onboarding-calendar') {
     return (
       <OnboardingCalendarSync
-        currentStep={4}
-        totalSteps={5}
+        currentStep={5}
+        totalSteps={6}
         onStepClick={handleOnboardingStepClick}
         onContinue={handleCalendarContinue}
         onSkip={handleSkip}
@@ -225,8 +256,8 @@ export default function App() {
   if (currentScreen === 'onboarding-complete') {
     return (
       <OnboardingComplete
-        currentStep={5}
-        totalSteps={5}
+        currentStep={6}
+        totalSteps={6}
         onStepClick={handleOnboardingStepClick}
         onGetStarted={handleOnboardingComplete}
       />

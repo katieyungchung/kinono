@@ -16,7 +16,7 @@ interface OnboardingInterestsProps {
 }
 
 const interestCategories = [
-  { id: 'outdoor', title: 'Outdoor Activities', emoji: '🏕️' },
+  { id: 'outdoor', title: 'Outdoor Activities', emoji: '🌲' },
   { id: 'indoor', title: 'Indoor Activities', emoji: '☕' },
   { id: 'food', title: 'Food & Drink', emoji: '🍽️' },
   { id: 'wellness', title: 'Wellness', emoji: '🧘' },
