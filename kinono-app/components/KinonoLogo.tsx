@@ -5,9 +5,9 @@ export function KinonoLogo() {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-        {/* Puzzle logo */}
+        {/* Kinono logo no text */}
         <Image 
-          source={require('@/assets/images/puzzle-logo.png')}
+          source={require('@/assets/images/kinono-logo-notext.png')}
           style={styles.logo}
           contentFit="contain"
         />
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   text: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '300',
+    fontFamily: 'ReemKufi_400Regular',
   },
 });
 
