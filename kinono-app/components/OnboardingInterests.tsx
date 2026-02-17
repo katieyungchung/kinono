@@ -16,14 +16,14 @@ interface OnboardingInterestsProps {
 }
 
 const interestCategories = [
-  { id: 'outdoor', title: 'Outdoor Activities', subtitle: 'walks, hikes, beach, parks', emoji: '🏕️' },
-  { id: 'indoor', title: 'Indoor Activities', subtitle: 'coffee, movies, games, reading', emoji: '☕' },
-  { id: 'food', title: 'Food & Drink', subtitle: 'restaurants, bars, cafes, cooking', emoji: '🍽️' },
-  { id: 'wellness', title: 'Wellness', subtitle: 'yoga, meditation, spa', emoji: '🧘' },
-  { id: 'arts', title: 'Arts & Culture', subtitle: 'museums, galleries, concerts, theater', emoji: '🎨' },
-  { id: 'nightlife', title: 'Music & Nightlife', subtitle: 'concerts, clubs, bars, live shows', emoji: '🎵' },
-  { id: 'fitness', title: 'Fitness', subtitle: 'gym, running, cycling, sports', emoji: '💪' },
-  { id: 'social', title: 'Social & Events', subtitle: 'parties, meetups, events, networking', emoji: '🎉' },
+  { id: 'outdoor', title: 'Outdoor Activities', emoji: '🏕️' },
+  { id: 'indoor', title: 'Indoor Activities', emoji: '☕' },
+  { id: 'food', title: 'Food & Drink', emoji: '🍽️' },
+  { id: 'wellness', title: 'Wellness', emoji: '🧘' },
+  { id: 'arts', title: 'Arts & Culture', emoji: '🎨' },
+  { id: 'nightlife', title: 'Music & Nightlife', emoji: '🎵' },
+  { id: 'fitness', title: 'Fitness', emoji: '💪' },
+  { id: 'social', title: 'Social & Events', emoji: '🎉' },
 ];
 
 export function OnboardingInterests({ currentStep, totalSteps, onStepClick, initialInterests, onContinue, onSkip }: OnboardingInterestsProps) {
@@ -80,7 +80,6 @@ export function OnboardingInterests({ currentStep, totalSteps, onStepClick, init
               >
                 <Text style={styles.emoji}>{category.emoji}</Text>
                 <Text style={styles.interestTitle}>{category.title}</Text>
-                <Text style={styles.interestSubtitle}>{category.subtitle}</Text>
                 {selectedInterests.includes(category.id) && (
                   <View style={styles.checkmark}>
                     <Ionicons name="checkmark" size={12} color="#5A3D5C" />
@@ -142,7 +141,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
+    fontFamily: 'ReemKufi_600SemiBold',
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 12,
@@ -167,8 +166,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 16,
     padding: 16,
-    height: 120,
+    height: 100,
     position: 'relative',
+    justifyContent: 'center',
   },
   interestCardSelected: {
     backgroundColor: 'rgba(157, 228, 207, 0.2)',
@@ -178,19 +178,13 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   emoji: {
-    fontSize: 28,
-    marginBottom: 8,
+    fontSize: 32,
+    marginBottom: 6,
   },
   interestTitle: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  interestSubtitle: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.6)',
-    lineHeight: 16,
   },
   checkmark: {
     position: 'absolute',

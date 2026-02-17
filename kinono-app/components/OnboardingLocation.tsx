@@ -282,11 +282,11 @@ export function OnboardingLocation({
               )}
             </MapView>
           )}
-          {location && !isLoadingLocation && (
+          {/* {location && !isLoadingLocation && (
             <View style={styles.mapOverlay}>
               <Text style={styles.mapOverlayText}>{location}</Text>
             </View>
-          )}
+          )} */}
         </Animated.View>
 
         {/* Buttons */}
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
   },
   sliderContainer: {
-    marginBottom: 12,
+    marginBottom: -10,
   },
   sliderLabel: {
     fontSize: 14,
