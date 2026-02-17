@@ -16,14 +16,14 @@ interface OnboardingInterestsProps {
 }
 
 const interestCategories = [
-  { id: 'outdoor', title: 'Outdoor Activities', subtitle: 'walks, hikes, beach, parks' },
-  { id: 'indoor', title: 'Indoor Activities', subtitle: 'coffee, movies, games, reading' },
-  { id: 'food', title: 'Food & Drink', subtitle: 'restaurants, bars, cafes, cooking' },
-  { id: 'wellness', title: 'Wellness', subtitle: 'yoga, meditation, spa' },
-  { id: 'arts', title: 'Arts & Culture', subtitle: 'museums, galleries, concerts, theater' },
-  { id: 'nightlife', title: 'Music & Nightlife', subtitle: 'concerts, clubs, bars, live shows' },
-  { id: 'fitness', title: 'Fitness', subtitle: 'gym, running, cycling, sports' },
-  { id: 'social', title: 'Social & Events', subtitle: 'parties, meetups, events, networking' },
+  { id: 'outdoor', title: 'Outdoor Activities', subtitle: 'walks, hikes, beach, parks', emoji: '🏕️' },
+  { id: 'indoor', title: 'Indoor Activities', subtitle: 'coffee, movies, games, reading', emoji: '☕' },
+  { id: 'food', title: 'Food & Drink', subtitle: 'restaurants, bars, cafes, cooking', emoji: '🍽️' },
+  { id: 'wellness', title: 'Wellness', subtitle: 'yoga, meditation, spa', emoji: '🧘' },
+  { id: 'arts', title: 'Arts & Culture', subtitle: 'museums, galleries, concerts, theater', emoji: '🎨' },
+  { id: 'nightlife', title: 'Music & Nightlife', subtitle: 'concerts, clubs, bars, live shows', emoji: '🎵' },
+  { id: 'fitness', title: 'Fitness', subtitle: 'gym, running, cycling, sports', emoji: '💪' },
+  { id: 'social', title: 'Social & Events', subtitle: 'parties, meetups, events, networking', emoji: '🎉' },
 ];
 
 export function OnboardingInterests({ currentStep, totalSteps, onStepClick, initialInterests, onContinue, onSkip }: OnboardingInterestsProps) {
@@ -58,7 +58,7 @@ export function OnboardingInterests({ currentStep, totalSteps, onStepClick, init
 
         {/* Title */}
         <Animated.View entering={FadeInDown.delay(200)} style={styles.titleContainer}>
-          <Text style={styles.title}>What do you like to do in your free time?</Text>
+          <Text style={styles.title}>What are your interests?</Text>
           <Text style={styles.subtitle}>Choose up to 5.</Text>
         </Animated.View>
 
@@ -78,6 +78,7 @@ export function OnboardingInterests({ currentStep, totalSteps, onStepClick, init
                   pressed && styles.interestCardPressed,
                 ]}
               >
+                <Text style={styles.emoji}>{category.emoji}</Text>
                 <Text style={styles.interestTitle}>{category.title}</Text>
                 <Text style={styles.interestSubtitle}>{category.subtitle}</Text>
                 {selectedInterests.includes(category.id) && (
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 16,
     padding: 16,
-    minHeight: 100,
+    height: 120,
     position: 'relative',
   },
   interestCardSelected: {
@@ -175,6 +176,10 @@ const styles = StyleSheet.create({
   },
   interestCardPressed: {
     opacity: 0.8,
+  },
+  emoji: {
+    fontSize: 28,
+    marginBottom: 8,
   },
   interestTitle: {
     fontSize: 14,

@@ -264,9 +264,9 @@ export function OnboardingLocation({
                   longitude: userLocation?.coords.longitude || region.longitude,
                 }}
                 radius={distance * 1609.34} // Convert miles to meters
-                fillColor="rgba(63, 187, 150, 0.3)"
-                strokeColor="rgba(157, 228, 207, 0.8)"
-                strokeWidth={2}
+                fillColor="rgba(63, 187, 150, 0.45)"
+                strokeColor="rgba(63, 187, 150, 1)"
+                strokeWidth={3}
               />
               
               {/* Marker - Only when user location is available */}

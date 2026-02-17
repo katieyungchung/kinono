@@ -9,8 +9,6 @@ interface SignInPageProps {
   onSignIn: () => void;
 }
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
 export function SignInPage({ onBack, onSignIn }: SignInPageProps) {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -148,17 +146,18 @@ export function SignInPage({ onBack, onSignIn }: SignInPageProps) {
             </Animated.View>
 
             {/* Email Sign-In Button */}
-            <AnimatedPressable
-              entering={FadeInDown.delay(500)}
-              onPress={handleEmailClick}
-              style={({ pressed }) => [
-                styles.emailButton,
-                pressed && styles.buttonPressed
-              ]}
-            >
-              <Ionicons name="mail" size={20} color="#FFFFFF" />
-              <Text style={styles.emailButtonText}>Sign in with Email</Text>
-            </AnimatedPressable>
+            <Animated.View entering={FadeInDown.delay(500)}>
+              <Pressable
+                onPress={handleEmailClick}
+                style={({ pressed }) => [
+                  styles.emailButton,
+                  pressed && styles.buttonPressed
+                ]}
+              >
+                <Ionicons name="mail" size={20} color="#FFFFFF" />
+                <Text style={styles.emailButtonText}>Sign in with Email</Text>
+              </Pressable>
+            </Animated.View>
           </>
         ) : (
           /* Email Form */
@@ -333,6 +332,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+    marginBottom: 8,
   },
   emailButtonText: {
     fontSize: 16,
