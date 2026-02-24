@@ -1,7 +1,9 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { GoogleAuthService } from '../services/google-auth.service';
 
 interface SignUpPageProps {
   onManualSignUp: () => void;
@@ -9,9 +11,37 @@ interface SignUpPageProps {
   onGoToSignIn: () => void;
 }
 
-// Removed AnimatedPressable - using Animated.View wrapper instead for better style compatibility
-
 export function SignUpPage({ onManualSignUp, onSocialSignUp, onGoToSignIn }: SignUpPageProps) {
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  const handleGoogleSignUp = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await GoogleAuthService.signInWithGoogle();
+      // Success! User is now signed in, move to onboarding
+      onSocialSignUp('google');
+    } catch (error: any) {
+      console.error('Google sign up error:', error);
+      
+      // Show user-friendly error
+      if (error.code === '-5') {
+        // User canceled the sign-in
+        Alert.alert('Sign up cancelled', 'You cancelled the Google sign up.');
+      } else if (error.message?.includes('DEVELOPER_ERROR')) {
+        Alert.alert(
+          'Configuration Error',
+          'Google Sign In is not properly configured. Please contact support.'
+        );
+      } else {
+        Alert.alert(
+          'Sign up failed',
+          error.message || 'Failed to sign up with Google. Please try again.'
+        );
+      }
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView 
@@ -36,18 +66,26 @@ export function SignUpPage({ onManualSignUp, onSocialSignUp, onGoToSignIn }: Sig
         >
           {/* Google */}
           <Pressable
-            onPress={() => onSocialSignUp('google')}
+            onPress={handleGoogleSignUp}
+            disabled={isGoogleLoading}
             style={({ pressed }) => [
               styles.socialButton,
-              pressed && styles.buttonPressed
+              isGoogleLoading && styles.socialButtonDisabled,
+              pressed && !isGoogleLoading && styles.buttonPressed
             ]}
           >
-            <Ionicons name="logo-google" size={20} color="#4285F4" />
-            <Text style={styles.socialButtonText}>Continue with Google</Text>
+            {isGoogleLoading ? (
+              <ActivityIndicator size="small" color="#4285F4" />
+            ) : (
+              <>
+                <Ionicons name="logo-google" size={20} color="#4285F4" />
+                <Text style={styles.socialButtonText}>Continue with Google</Text>
+              </>
+            )}
           </Pressable>
 
           {/* Facebook */}
-          <Pressable
+          {/* <Pressable
             onPress={() => onSocialSignUp('facebook')}
             style={({ pressed }) => [
               styles.socialButton,
@@ -56,10 +94,10 @@ export function SignUpPage({ onManualSignUp, onSocialSignUp, onGoToSignIn }: Sig
           >
             <Ionicons name="logo-facebook" size={20} color="#1877F2" />
             <Text style={styles.socialButtonText}>Continue with Facebook</Text>
-          </Pressable>
+          </Pressable> */}
 
           {/* Instagram */}
-          <Pressable
+          {/* <Pressable
             onPress={() => onSocialSignUp('instagram')}
             style={({ pressed }) => [
               styles.socialButton,
@@ -68,7 +106,7 @@ export function SignUpPage({ onManualSignUp, onSocialSignUp, onGoToSignIn }: Sig
           >
             <Ionicons name="logo-instagram" size={20} color="#E4405F" />
             <Text style={styles.socialButtonText}>Continue with Instagram</Text>
-          </Pressable>
+          </Pressable> */}
         </Animated.View>
 
         {/* Divider */}
@@ -160,6 +198,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#374151',
+  },
+  socialButtonDisabled: {
+    opacity: 0.6,
   },
   divider: {
     flexDirection: 'row',

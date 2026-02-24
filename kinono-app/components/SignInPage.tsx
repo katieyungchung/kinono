@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn, FadeInRight } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthService } from '../services/auth.service';
+import { GoogleAuthService } from '../services/google-auth.service';
 
 interface SignInPageProps {
   onBack: () => void;
@@ -18,6 +19,7 @@ export function SignInPage({ onBack, onSignIn }: SignInPageProps) {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errors, setErrors] = useState({
     email: '',
     password: '',
@@ -88,7 +90,36 @@ export function SignInPage({ onBack, onSignIn }: SignInPageProps) {
   const handleBackToOptions = () => {
     setShowEmailForm(false);
     setFormData({ email: '', password: '' });
-    setErrors({ email: '', password: '' });
+    setErrors({ email: '', password: '', submit: '' });
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await GoogleAuthService.signInWithGoogle();
+      // Success! User is now signed in, move to home
+      onSignIn();
+    } catch (error: any) {
+      console.error('Google sign in error:', error);
+      
+      // Show user-friendly error
+      if (error.code === '-5') {
+        // User canceled the sign-in
+        Alert.alert('Sign in cancelled', 'You cancelled the Google sign in.');
+      } else if (error.message?.includes('DEVELOPER_ERROR')) {
+        Alert.alert(
+          'Configuration Error',
+          'Google Sign In is not properly configured. Please contact support.'
+        );
+      } else {
+        Alert.alert(
+          'Sign in failed',
+          error.message || 'Failed to sign in with Google. Please try again.'
+        );
+      }
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -124,14 +155,22 @@ export function SignInPage({ onBack, onSignIn }: SignInPageProps) {
               style={styles.socialContainer}
             >
               <Pressable
-                onPress={onSignIn}
+                onPress={handleGoogleSignIn}
+                disabled={isGoogleLoading}
                 style={({ pressed }) => [
                   styles.socialButton,
-                  pressed && styles.buttonPressed
+                  isGoogleLoading && styles.socialButtonDisabled,
+                  pressed && !isGoogleLoading && styles.buttonPressed
                 ]}
               >
-                <Ionicons name="logo-google" size={20} color="#4285F4" />
-                <Text style={styles.socialButtonText}>Continue with Google</Text>
+                {isGoogleLoading ? (
+                  <ActivityIndicator size="small" color="#4285F4" />
+                ) : (
+                  <>
+                    <Ionicons name="logo-google" size={20} color="#4285F4" />
+                    <Text style={styles.socialButtonText}>Continue with Google</Text>
+                  </>
+                )}
               </Pressable>
 
               <Pressable
@@ -338,6 +377,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#374151',
+  },
+  socialButtonDisabled: {
+    opacity: 0.6,
   },
   divider: {
     flexDirection: 'row',

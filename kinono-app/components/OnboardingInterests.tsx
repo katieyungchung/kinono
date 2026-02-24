@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { KinonoLogo } from './KinonoLogo';
 import { OnboardingProgressBar } from './OnboardingProgressBar';
-import { useAuth } from '../contexts/AuthContext';
+import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 
 interface OnboardingInterestsProps {
@@ -32,7 +32,6 @@ export function OnboardingInterests({ currentStep, totalSteps, onStepClick, init
   const [selectedInterests, setSelectedInterests] = useState<string[]>(initialInterests || []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { user } = useAuth();
 
   const toggleInterest = (id: string) => {
     if (selectedInterests.includes(id)) {
@@ -43,11 +42,6 @@ export function OnboardingInterests({ currentStep, totalSteps, onStepClick, init
   };
 
   const handleContinue = async () => {
-    if (!user) {
-      setError('Please sign in to continue');
-      return;
-    }
-
     if (selectedInterests.length === 0) {
       setError('Please select at least one interest');
       return;
@@ -57,14 +51,20 @@ export function OnboardingInterests({ currentStep, totalSteps, onStepClick, init
     setError('');
 
     try {
-      // Save interests to Supabase
-      await UserService.saveInterests(user.id, selectedInterests);
+      // Get current user from auth service
+      const currentUser = await AuthService.getCurrentUser();
       
-      // Move to next screen
+      if (currentUser) {
+        // Save interests to Supabase
+        await UserService.saveInterests(currentUser.id, selectedInterests);
+      }
+      
+      // Move to next screen (whether save succeeded or not)
       onContinue(selectedInterests);
     } catch (err: any) {
       console.error('Error saving interests:', err);
-      setError('Failed to save interests. Please try again.');
+      // Don't block progression, just log the error
+      onContinue(selectedInterests);
     } finally {
       setIsLoading(false);
     }

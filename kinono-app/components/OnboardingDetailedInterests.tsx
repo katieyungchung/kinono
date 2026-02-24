@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { KinonoLogo } from './KinonoLogo';
 import { OnboardingProgressBar } from './OnboardingProgressBar';
-import { useAuth } from '../contexts/AuthContext';
+import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 
 interface OnboardingDetailedInterestsProps {
@@ -117,7 +117,6 @@ export function OnboardingDetailedInterests({
   const [selectedInterests, setSelectedInterests] = useState<string[]>(initialDetailedInterests || []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { user } = useAuth();
 
   // Get all sub-interests based on selected categories
   const availableInterests = selectedCategories.flatMap(
@@ -133,11 +132,6 @@ export function OnboardingDetailedInterests({
   };
 
   const handleContinue = async () => {
-    if (!user) {
-      setError('Please sign in to continue');
-      return;
-    }
-
     if (selectedInterests.length === 0) {
       setError('Please select at least one interest');
       return;
@@ -147,14 +141,20 @@ export function OnboardingDetailedInterests({
     setError('');
 
     try {
-      // Save detailed interests to Supabase
-      await UserService.saveDetailedInterests(user.id, selectedInterests);
+      // Get current user from auth service
+      const currentUser = await AuthService.getCurrentUser();
       
-      // Move to next screen
+      if (currentUser) {
+        // Save detailed interests to Supabase
+        await UserService.saveDetailedInterests(currentUser.id, selectedInterests);
+      }
+      
+      // Move to next screen (whether save succeeded or not)
       onContinue(selectedInterests);
     } catch (err: any) {
       console.error('Error saving detailed interests:', err);
-      setError('Failed to save interests. Please try again.');
+      // Don't block progression, just log the error
+      onContinue(selectedInterests);
     } finally {
       setIsLoading(false);
     }
