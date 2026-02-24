@@ -1,10 +1,12 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { KinonoLogo } from './KinonoLogo';
 import { OnboardingProgressBar } from './OnboardingProgressBar';
+import { useAuth } from '../contexts/AuthContext';
+import { UserService } from '../services/user.service';
 
 interface OnboardingInterestsProps {
   currentStep: number;
@@ -28,6 +30,9 @@ const interestCategories = [
 
 export function OnboardingInterests({ currentStep, totalSteps, onStepClick, initialInterests, onContinue, onSkip }: OnboardingInterestsProps) {
   const [selectedInterests, setSelectedInterests] = useState<string[]>(initialInterests || []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { user } = useAuth();
 
   const toggleInterest = (id: string) => {
     if (selectedInterests.includes(id)) {
@@ -37,8 +42,32 @@ export function OnboardingInterests({ currentStep, totalSteps, onStepClick, init
     }
   };
 
-  const handleContinue = () => {
-    onContinue(selectedInterests);
+  const handleContinue = async () => {
+    if (!user) {
+      setError('Please sign in to continue');
+      return;
+    }
+
+    if (selectedInterests.length === 0) {
+      setError('Please select at least one interest');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Save interests to Supabase
+      await UserService.saveInterests(user.id, selectedInterests);
+      
+      // Move to next screen
+      onContinue(selectedInterests);
+    } catch (err: any) {
+      console.error('Error saving interests:', err);
+      setError('Failed to save interests. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -92,23 +121,35 @@ export function OnboardingInterests({ currentStep, totalSteps, onStepClick, init
 
         {/* Buttons */}
         <Animated.View entering={FadeIn.delay(500)} style={styles.buttonContainer}>
+          {/* Error Message */}
+          {error && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={20} color="#EF4444" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
           <Pressable
             onPress={handleContinue}
-            disabled={selectedInterests.length === 0}
+            disabled={selectedInterests.length === 0 || isLoading}
             style={({ pressed }) => [
               styles.continueButton,
-              selectedInterests.length === 0 && styles.continueButtonDisabled,
-              pressed && selectedInterests.length > 0 && styles.buttonPressed,
+              (selectedInterests.length === 0 || isLoading) && styles.continueButtonDisabled,
+              pressed && selectedInterests.length > 0 && !isLoading && styles.buttonPressed,
             ]}
           >
-            <Text style={[
-              styles.continueButtonText,
-              selectedInterests.length === 0 && styles.continueButtonTextDisabled
-            ]}>
-              Continue
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={[
+                styles.continueButtonText,
+                selectedInterests.length === 0 && styles.continueButtonTextDisabled
+              ]}>
+                Continue
+              </Text>
+            )}
           </Pressable>
-          <Pressable onPress={onSkip} style={styles.skipButton}>
+          <Pressable onPress={onSkip} disabled={isLoading} style={styles.skipButton}>
             <Text style={styles.skipButtonText}>Skip for now</Text>
           </Pressable>
         </Animated.View>
@@ -199,6 +240,21 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     gap: 12,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    borderRadius: 12,
+    padding: 12,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#FCA5A5',
+    flex: 1,
   },
   continueButton: {
     backgroundColor: '#F59E0B',

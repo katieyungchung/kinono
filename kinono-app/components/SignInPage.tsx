@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn, FadeInRight } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { AuthService } from '../services/auth.service';
 
 interface SignInPageProps {
   onBack: () => void;
@@ -16,9 +17,11 @@ export function SignInPage({ onBack, onSignIn }: SignInPageProps) {
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({
     email: '',
     password: '',
+    submit: '',
   });
 
   const validateForm = () => {
@@ -46,9 +49,28 @@ export function SignInPage({ onBack, onSignIn }: SignInPageProps) {
     return isValid;
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setErrors({ ...errors, submit: '' });
+
+    try {
+      // Sign in with Supabase
+      await AuthService.signIn(formData.email, formData.password);
+
+      // Success! Move to home screen
       onSignIn();
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      setErrors({
+        ...errors,
+        submit: 'Invalid email or password. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -216,15 +238,29 @@ export function SignInPage({ onBack, onSignIn }: SignInPageProps) {
               <Text style={styles.forgotPasswordText}>Forgot password?</Text>
             </Pressable>
 
+            {/* Error Message */}
+            {errors.submit && (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={20} color="#EF4444" />
+                <Text style={styles.errorText}>{errors.submit}</Text>
+              </View>
+            )}
+
             {/* Submit Button */}
             <Pressable
               onPress={handleSubmit}
+              disabled={isLoading}
               style={({ pressed }) => [
                 styles.submitButton,
-                pressed && styles.buttonPressed
+                isLoading && styles.submitButtonDisabled,
+                pressed && !isLoading && styles.buttonPressed
               ]}
             >
-              <Text style={styles.submitButtonText}>Sign in</Text>
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitButtonText}>Sign in</Text>
+              )}
             </Pressable>
           </Animated.View>
         )}
@@ -384,6 +420,16 @@ const styles = StyleSheet.create({
     color: '#FCA5A5',
     marginTop: 4,
   },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    borderRadius: 12,
+    padding: 12,
+  },
   forgotPassword: {
     alignSelf: 'flex-end',
   },
@@ -408,6 +454,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  buttonPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
   },
   signUpContainer: {
     flexDirection: 'row',

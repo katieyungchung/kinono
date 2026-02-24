@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { AuthService } from '../services/auth.service';
 
 interface ManualSignUpPageProps {
   onBack: () => void;
@@ -18,11 +19,13 @@ export function ManualSignUpPage({ onBack, onComplete, onGoToSignIn }: ManualSig
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({
     name: '',
     username: '',
     email: '',
     password: '',
+    submit: '',
   });
 
   const validateForm = () => {
@@ -31,6 +34,7 @@ export function ManualSignUpPage({ onBack, onComplete, onGoToSignIn }: ManualSig
       username: '',
       email: '',
       password: '',
+      submit: '',
     };
 
     let isValid = true;
@@ -65,9 +69,32 @@ export function ManualSignUpPage({ onBack, onComplete, onGoToSignIn }: ManualSig
     return isValid;
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setErrors({ ...errors, submit: '' });
+
+    try {
+      // Sign up with Supabase
+      await AuthService.signUp(
+        formData.email,
+        formData.password,
+        formData.name
+      );
+
+      // Success! Move to next screen (onboarding)
       onComplete();
+    } catch (error: any) {
+      console.error('Sign up error:', error);
+      setErrors({
+        ...errors,
+        submit: error.message || 'Failed to create account. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -183,15 +210,29 @@ export function ManualSignUpPage({ onBack, onComplete, onGoToSignIn }: ManualSig
             )}
           </View>
 
+          {/* Error Message */}
+          {errors.submit && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={20} color="#EF4444" />
+              <Text style={styles.errorText}>{errors.submit}</Text>
+            </View>
+          )}
+
           {/* Submit Button */}
           <Pressable
             onPress={handleSubmit}
+            disabled={isLoading}
             style={({ pressed }) => [
               styles.submitButton,
-              pressed && styles.buttonPressed
+              isLoading && styles.submitButtonDisabled,
+              pressed && !isLoading && styles.buttonPressed
             ]}
           >
-            <Text style={styles.submitButtonText}>Create Account</Text>
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.submitButtonText}>Create Account</Text>
+            )}
           </Pressable>
         </Animated.View>
 
@@ -284,6 +325,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#FCA5A5',
   },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    borderRadius: 12,
+    padding: 12,
+  },
   submitButton: {
     backgroundColor: '#F59E0B',
     borderRadius: 16,
@@ -300,6 +351,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
   },
   buttonPressed: {
     opacity: 0.8,
